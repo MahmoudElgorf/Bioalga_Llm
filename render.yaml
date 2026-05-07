@@ -1,0 +1,22 @@
+services:
+  - type: web
+    name: bioalga-backend
+    runtime: python
+    repo: https://github.com/MahmoudElgorf/Bioalga_Llm
+    plan: free
+    region: frankfurt 
+    buildCommand: pip install -r requirements.txt
+    startCommand: uvicorn app.main:app --host 0.0.0.0 --port $PORT
+    envVars:
+      - key: OPENAI_API_KEY
+        sync: false
+        required: true
+      - key: DEBUG_MODE
+        value: false
+      - key: RATE_LIMIT_ENABLED
+        value: false
+      - key: REQUIRE_AUTH
+        value: false
+      - key: ALLOWED_ORIGINS_STR
+        value: '["*"]'
+    healthCheckPath: /health
