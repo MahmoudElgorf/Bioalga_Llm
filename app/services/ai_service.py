@@ -6,7 +6,7 @@ import logging
 logger = logging.getLogger(__name__)
 
 class AIService:
-    """Service for OpenAI API interaction"""
+    """Service for OpenAI API interaction - more flexible and longer responses"""
     
     def __init__(self):
         self.client = OpenAI(api_key=settings.openai_api_key)
@@ -17,14 +17,14 @@ class AIService:
     def chat_with_messages(self, messages: List[Dict[str, str]]) -> Dict[str, Any]:
         """
         Send messages to OpenAI and get response
-        (تعديل: إزالة async لأننا بنستخدمها بشكل متزامن)
+        Increased token limit for richer answers
         """
         try:
             response = self.client.chat.completions.create(
                 model=self.model,
                 messages=messages,
-                temperature=self.temperature,
-                max_tokens=self.max_tokens,
+                temperature=self.temperature,  # 0.4 from config
+                max_tokens=800,  # زيادة الحد الأقصى من 500 إلى 800
                 top_p=0.9
             )
             
@@ -52,10 +52,10 @@ Please provide a clear, structured, and scientifically accurate summary includin
 3. Key characteristics
 4. Commercial relevance
 
-Keep response concise and professional."""
+Keep response detailed but concise."""
 
         messages = [
-            {"role": "system", "content": "You are an algae taxonomy and toxicity expert. Provide accurate, concise responses."},
+            {"role": "system", "content": "You are an algae taxonomy and toxicity expert. Provide accurate, detailed responses."},
             {"role": "user", "content": prompt}
         ]
         
@@ -64,7 +64,7 @@ Keep response concise and professional."""
                 model=self.model,
                 messages=messages,
                 temperature=0.3,
-                max_tokens=400
+                max_tokens=600  # زيادة
             )
             return response.choices[0].message.content
         except Exception as e:

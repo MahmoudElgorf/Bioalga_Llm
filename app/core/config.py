@@ -1,13 +1,14 @@
 from pydantic_settings import BaseSettings
 from typing import List
 import json
+import os
 
 class Settings(BaseSettings):
     # OpenAI
     openai_api_key: str
     openai_model: str = "gpt-4o-mini"
     openai_temperature: float = 0.4
-    openai_max_tokens: int = 500
+    openai_max_tokens: int = 800 
     
     # Server
     app_name: str = "BioAlga AI Assistant"
@@ -32,6 +33,7 @@ class Settings(BaseSettings):
     
     class Config:
         env_file = ".env"
-        extra = "ignore"  # مهم جداً
+        case_sensitive = False
+        extra = "ignore"
 
 settings = Settings()

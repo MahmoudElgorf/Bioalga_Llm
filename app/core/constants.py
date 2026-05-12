@@ -1,5 +1,6 @@
-# Keywords for detecting algae-related questions
+# Expanded keywords for algae and related fields
 ALGAE_KEYWORDS = [
+    # English algae terms
     "algae", "algal", "cyanobacteria", "diatom", "dinoflagellate",
     "microcystin", "anatoxin", "saxitoxin", "brevetoxin", "nodularin",
     "bloom", "eutrophication", "aquaculture", "biofuel", "biomass",
@@ -8,49 +9,42 @@ ALGAE_KEYWORDS = [
     "green algae", "blue-green algae", "spirulina", "chlorella",
     "phytoplankton", "zooplankton", "algaecide", "microalgae",
     "macroalgae", "seaweed", "kelp", "phycotoxin", "algal bloom",
+    "desmid", "euglena", "volvox", "ulva", "sargassum", "chlorella",
+    "scenedesmus", "haematococcus", "dunaliella", "nannochloropsis",
+    "phycology", "phycologist", "aquatic", "marine", "freshwater",
+    "water quality", "oxygen production", "carbon capture", "co2",
+    "bioremediation", "wastewater treatment", "fish kill",
+    
+    # Arabic algae terms
     "طحالب", "طحلب", "سيانوبكتيريا", "دايتوم", "دينوفلاجيليت",
     "تسمم", "سمية", "ازهار", "تكاثر", "ماء", "بحيرة", "بحر",
-    "مزرعة", "استزراع", "علف", "وقود", "حيوي"
+    "مزرعة", "استزراع", "علف", "وقود", "حيوي", "بيئي", "بيئة",
+    "نبات", "مائي", "عوالق", "أكسجين", "كربون", "معالجة",
+    
+    # General helpful words (to allow greetings and casual conversation)
+    "hello", "hi", "hey", "greetings", "thanks", "thank you",
+    "help", "please", "tell me", "what is", "how to", "explain",
+    "مرحبا", "اهلا", "سلام", "شكرا", "مساعده", "كيف", "ماذا"
 ]
 
-# System prompt template for OpenAI
-SYSTEM_PROMPT_TEMPLATE = """You are a scientific assistant specialized 100% in algae only.
+# System prompt now encourages flexibility
+SYSTEM_PROMPT_TEMPLATE = """You are BioAlga, a friendly and knowledgeable AI assistant specialized in algae and related fields.
 
-Information about current algae ({algae_type}):
-{algae_context}
+Information about current user's algae interest: {algae_type}
+Detailed context: {algae_context}
 
-Strict rules:
-1. Answer ONLY questions related to algae
-2. If user asks about non-algae topics, politely refuse: "I am specialized in algae only. Please ask about algae classification, toxicity, applications, or environmental impact."
-3. For toxic algae, always include clear warnings using WARNING
-4. Be scientifically accurate and concise (3-5 sentences typically)
-5. Respond in the same language as the user's question
+You can answer questions about algae, aquatic biology, environmental science, and related topics. 
+Be warm and engaging. If a user greets you, respond politely. Keep answers scientifically accurate but approachable.
 
-Remember: Your specialization is algae only."""
+Remember: You are an algae expert. Help the user learn!
 
-# Error messages
+Current algae focus: {algae_type}"""
+
+# Error messages (still used for rate limiting, etc.)
 ERROR_MESSAGES = {
-    "outside_scope": "I am a specialist in algae only. I cannot answer this question. Do you have a question about algae?",
-    "api_error": "Sorry, an error occurred connecting to the service. Please try again.",
-    "invalid_algae": "Algae type not found in knowledge base.",
-    "rate_limit": "Rate limit exceeded. Please wait a minute and try again.",
-    "invalid_input": "Invalid input provided. Please check your request.",
-    "openai_error": "AI service temporarily unavailable. Please try again later."
-}
-
-# Confidence levels
-CONFIDENCE_LEVELS = {
-    "high": 0.8,
-    "medium": 0.6,
-    "low": 0.4
-}
-
-# Algae categories
-ALGAE_CATEGORIES = {
-    "cyanobacteria": "Cyanobacteria (Blue-green bacteria)",
-    "dinoflagellate": "Dinoflagellate",
-    "diatom": "Diatom",
-    "green_algae": "Green Algae",
-    "red_algae": "Red Algae",
-    "brown_algae": "Brown Algae"
+    "outside_scope": "I am specialized in algae, but I'm happy to help with related topics! Could you rephrase?",
+    "api_error": "Sorry, an error occurred. Please try again in a moment.",
+    "invalid_algae": "Algae type not found in my knowledge base, but I'll try my best to help.",
+    "rate_limit": "Rate limit exceeded. Please wait and try again.",
+    "invalid_input": "Invalid input. Please provide a clear question."
 }

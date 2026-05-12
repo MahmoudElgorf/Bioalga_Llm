@@ -15,77 +15,69 @@ ai_service = AIService()
 algae_service = AlgaeService()
 validation_service = ValidationService()
 
-SYSTEM_PROMPT = """You are a scientific assistant specialized 100% in algae only.
+# System prompt مع حرية أكبر وإرشادات لطيفة
+SYSTEM_PROMPT = """You are BioAlga, a friendly and knowledgeable AI assistant specialized in algae and related fields (phycology, aquatic biology, environmental science, aquaculture, harmful algal blooms, toxins, climate impact, CO2 sequestration, etc.).
 
 Your expertise includes:
-- Algae classification and identification
-- Toxicity analysis and safety warnings
-- Environmental impact assessment
-- Commercial applications (aquaculture, biofertilizers, research)
+- Algae classification, identification, and taxonomy
+- Toxicity analysis, health effects, and safety warnings
+- Environmental impact (eutrophication, red tides, hypoxia)
+- Commercial applications (biofertilizers, aquaculture feed, biofuels, nutraceuticals)
 - CO2 sequestration and climate relevance
+- Water quality monitoring and treatment
 
-Strict rules:
-1. Answer ONLY questions related to algae
-2. If user asks about non-algae topics, politely refuse: "I am specialized in algae only. Please ask about algae classification, toxicity, applications, or environmental impact."
-3. For toxic algae, always include clear warnings
-4. Be scientifically accurate and concise
-5. Respond in the same language as the user's question
+Guidelines:
+1. You can answer ANY question related to algae or its adjacent fields (marine biology, water ecology, phycotoxins, etc.).
+2. If a question is completely unrelated (e.g., sports, politics, general news), politely redirect the user to algae topics.
+3. For greetings or casual conversation, respond warmly and offer assistance on algae topics.
+4. Always provide accurate, scientifically sound information.
+5. Use clear language and include warnings when discussing toxic algae.
 
-Remember: Your specialization is algae only."""
+Remember: You are an algae expert, but you are also helpful and conversational. Engage the user and guide them towards useful information about algae."""
 
 @router.post("/", response_model=ChatResponse)
-def chat(request: ChatRequest):  # إزالة async
+def chat(request: ChatRequest):
     """
-    Smart algae specialist assistant
-    Answers only algae-related questions
+    Smart algae assistant - answers all algae-related questions freely.
+    No hard rejection of non-algae topics; instead, the AI will respond appropriately.
     """
     try:
-        # Check if question is algae-related
+        # تحقق بسيط لتسجيل ما إذا كان السؤال ذا صلة (للاستخدام الداخلي فقط)
         is_relevant, keywords = validation_service.is_algae_related(request.user_question)
         
-        if not is_relevant and len(request.user_question.split()) > 3:
-            return ChatResponse(
-                response="I am a specialist in algae only. I can help you with:\n- Algae classification and toxicity\n- Environmental impact assessment\n- Commercial applications (aquaculture, biofertilizers)\n- Safety instructions for handling\n\nDo you have a specific question about algae?",
-                is_algae_related=False,
-                recommendations=["ask_algae_specific_question"],
-                algae_type=request.algae_type
-            )
-        
-        # Build algae context
+        # بناء سياق الطحلب الحالي (مهم للمعلومات الدقيقة)
         context = algae_service.get_algae_context(
             request.algae_type,
             request.classification_result
         )
         
-        # Build messages for AI
+        # بناء رسائل النظام مع السياق
         messages = [
             {"role": "system", "content": SYSTEM_PROMPT},
-            {"role": "system", "content": f"Current algae being discussed: {request.algae_type}\nContext: {context}"}
+            {"role": "system", "content": f"Current algae being discussed: {request.algae_type}\nAdditional context: {context}"}
         ]
         
         if request.conversation_history:
-            messages.extend(request.conversation_history[-10:])
+            messages.extend(request.conversation_history[-15:])  # زيادة عدد الرسائل المحفوظة
         
         messages.append({"role": "user", "content": request.user_question})
         
-        # Get AI response (no await)
+        # استدعاء الـ AI (بدون حظر)
         result = ai_service.chat_with_messages(messages)
         
-        # Build recommendations
+        # إضافة توصيات فقط إذا كان السؤال عن الطحالب بشكل واضح
         recommendations = []
         if request.classification_result:
             if request.classification_result.get('isToxic', False):
-                recommendations.append("This algae is toxic - avoid direct contact")
+                recommendations.append(" This algae is toxic - handle with care")
             
             confidence = request.classification_result.get('confidence', 0)
             if confidence < 0.6:
-                recommendations.append("Low confidence - consider recapturing with better lighting")
-            elif confidence < 0.8:
-                recommendations.append("Medium confidence - secondary verification recommended")
+                recommendations.append("Low classification confidence - consider recapturing the image")
         
         return ChatResponse(
             response=result['response'],
-            is_algae_related=True,
+            is_algae_related=is_relevant,  # لا تؤثر على الرد، فقط للتسجيل
             recommendations=recommendations,
             algae_type=request.algae_type,
             confidence_boost=result.get('confidence_boost')
@@ -102,3 +94,10 @@ def get_available_types():
         "types": algae_service.get_available_algae_types(),
         "count": len(algae_service.get_available_algae_types())
     }
+
+@router.post("/compare")
+def compare_algae_types(algae_types: List[str]):
+    """Compare multiple algae types"""
+    from app.services.enhancement_service import EnhancementService
+    comparison = EnhancementService.compare_algae_types(algae_types)
+    return comparison
