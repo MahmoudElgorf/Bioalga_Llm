@@ -8,7 +8,11 @@ class Settings(BaseSettings):
     openai_api_key: str
     openai_model: str = "gpt-4o-mini"
     openai_temperature: float = 0.4
-    openai_max_tokens: int = 800 
+    openai_max_tokens: int = 800
+    
+    # Streaming Settings
+    stream_enabled: bool = True  # Enable/disable streaming responses
+    stream_chunk_delay: float = 0.01  # Delay between chunks (seconds)
     
     # Server
     app_name: str = "BioAlga AI Assistant"
