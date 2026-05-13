@@ -6,7 +6,7 @@ import logging
 logger = logging.getLogger(__name__)
 
 class AIService:
-    """Service for OpenAI API interaction - more flexible and longer responses"""
+    """Service for OpenAI API interaction"""
     
     def __init__(self):
         self.client = OpenAI(api_key=settings.openai_api_key)
@@ -15,16 +15,13 @@ class AIService:
         self.max_tokens = settings.openai_max_tokens
     
     def chat_with_messages(self, messages: List[Dict[str, str]]) -> Dict[str, Any]:
-        """
-        Send messages to OpenAI and get response
-        Increased token limit for richer answers
-        """
+        """Non-streaming: Send messages to OpenAI and get response"""
         try:
             response = self.client.chat.completions.create(
                 model=self.model,
                 messages=messages,
-                temperature=self.temperature,  # 0.4 from config
-                max_tokens=800,  # زيادة الحد الأقصى من 500 إلى 800
+                temperature=self.temperature,
+                max_tokens=self.max_tokens,
                 top_p=0.9
             )
             
@@ -37,6 +34,22 @@ class AIService:
         except OpenAIError as e:
             logger.error(f"OpenAI API error: {str(e)}")
             raise Exception(f"AI service error: {str(e)}")
+    
+    async def chat_with_stream(self, messages: List[Dict[str, str]]):
+        """Streaming: Send messages to OpenAI and return stream"""
+        try:
+            stream = await self.client.chat.completions.create(
+                model=self.model,
+                messages=messages,
+                temperature=self.temperature,
+                max_tokens=self.max_tokens,
+                stream=True,
+            )
+            return stream
+            
+        except OpenAIError as e:
+            logger.error(f"OpenAI API stream error: {str(e)}")
+            raise Exception(f"AI service stream error: {str(e)}")
     
     def enhance_classification_text(self, algae_type: str, raw_text: str) -> str:
         """Enhance raw classification text using AI"""
@@ -64,7 +77,7 @@ Keep response detailed but concise."""
                 model=self.model,
                 messages=messages,
                 temperature=0.3,
-                max_tokens=600  # زيادة
+                max_tokens=600
             )
             return response.choices[0].message.content
         except Exception as e:
